@@ -1,6 +1,8 @@
 # social-network-api
 
 MongoDB is a source-available cross-platform document-oriented database program. Classified as a NoSQL database program, MongoDB uses JSON-like documents with optional schemas. This code is for an API for a social network web application where users can share their thoughts, react to friends’ thoughts, and create a friend list. It uses Express.js for routing, a MongoDB database, and the Mongoose ODM.
+![image](https://github.com/l-antonello/social-network-api/assets/122548483/67d1aaf2-35e2-4110-a1c4-e4cb7584d3e0)
+
 
 
 ## Installation

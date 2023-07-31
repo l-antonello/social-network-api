@@ -12,7 +12,7 @@ MongoDB is a source-available cross-platform document-oriented database program.
 
 ## Usage
 
-A video walkthough can be seen here
+A video walkthough can be seen [here](https://drive.google.com/file/d/1OsP41rLbNAUocjij348F-_JX_WqBWV4C/view)
 
 
 ## Contributing

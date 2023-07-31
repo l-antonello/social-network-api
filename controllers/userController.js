@@ -1,35 +1,46 @@
 // ObjectId() method for converting userId string into an ObjectId for querying database
 const { ObjectId } = require('mongoose').Types;
-const { user, Course } = require('../models');
+const { User, Thought } = require('../models');
 
-// TODO: Create an aggregate function to get the number of users overall
 const headCount = async () => {
-  // Your code here
-  const numberOfusers = await user.aggregate();
-  return numberOfusers;
-}
+  try {
+    const numberOfUsers = await User.aggregate([
+      { $group: { _id: null, count: { $sum: 1 } } },
+    ]);
 
-// Execute the aggregate method on the user model and calculate the overall grade by using the $avg operator
-const grade = async (userId) =>
-  user.aggregate([
-    // TODO: Ensure we include only the user who can match the given ObjectId using the $match operator
-    {
-      // Your code here
-    },
-    {
-      $unwind: '$assignments',
-    },
-    // TODO: Group information for the user with the given ObjectId alongside an overall grade calculated using the $avg operator
-    {
-      // Your code here
-    },
-  ]);
+    return numberOfUsers[0] ? numberOfUsers[0].count : 0;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+const friend = async (userId) => {
+  try {
+    const userFriend = await User.aggregate([
+      { $match: { _id: ObjectId(userId) } },
+      { $unwind: '$reactions' },
+      {
+        $group: {
+          _id: '$_id',
+          overallfriend: { $avg: '$reactions.friend' },
+        },
+      },
+    ]);
+
+    return userFriend;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 
 module.exports = {
   // Get all users
-  async getusers(req, res) {
+  async getUsers(req, res) {
     try {
-      const users = await user.find();
+      const users = await User.find();
       const userObj = {
         users,
         headCount: await headCount(),
@@ -41,9 +52,9 @@ module.exports = {
     }
   },
   // Get a single user
-  async getSingleuser(req, res) {
+  async getSingleUser(req, res) {
     try {
-      const user = await user.findOne({ _id: req.params.userId })
+      const user = await User.findOne({ _id: req.params.userId })
         .select('-__v')
         .lean();
 
@@ -53,7 +64,7 @@ module.exports = {
 
       res.json({
         user,
-        grade: await grade(req.params.userId),
+        friend: await friend(req.params.userId),
       });
     } catch (err) {
       console.log(err);
@@ -61,32 +72,32 @@ module.exports = {
     }
   },
   // create a new user
-  async createuser(req, res) {
+  async createUser(req, res) {
     try {
-      const user = await user.create(req.body);
+      const user = await User.create(req.body);
       res.json(user);
     } catch (err) {
       res.status(500).json(err);
     }
   },
-  // Delete a user and remove them from the course
-  async deleteuser(req, res) {
+  // Delete a user and remove them from the thought
+  async deleteUser(req, res) {
     try {
-      const user = await user.findOneAndRemove({ _id: req.params.userId });
+      const user = await User.findOneAndRemove({ _id: req.params.userId });
 
       if (!user) {
         return res.status(404).json({ message: 'No such user exists' })
       }
 
-      const course = await Course.findOneAndUpdate(
+      const thought = await Thought.findOneAndUpdate(
         { users: req.params.userId },
         { $pull: { users: req.params.userId } },
         { new: true }
       );
 
-      if (!course) {
+      if (!thought) {
         return res.status(404).json({
-          message: 'user deleted, but no courses found',
+          message: 'user deleted, but no thoughts found',
         });
       }
 
@@ -97,14 +108,14 @@ module.exports = {
     }
   },
 
-  // Add an assignment to a user
-  async addAssignment(req, res) {
+  // Add an reaction to a user
+  async addReaction(req, res) {
     try {
-      console.log('You are adding an assignment');
+      console.log('You are adding an reaction');
       console.log(req.body);
-      const user = await user.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { _id: req.params.userId },
-        { $addToSet: { assignments: req.body } },
+        { $addToSet: { reactions: req.body } },
         { runValidators: true, new: true }
       );
 
@@ -119,12 +130,12 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  // Remove assignment from a user
-  async removeAssignment(req, res) {
+  // Remove reaction from a user
+  async removeReaction(req, res) {
     try {
-      const user = await user.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { _id: req.params.userId },
-        { $pull: { assignment: { assignmentId: req.params.assignmentId } } },
+        { $pull: { reaction: { reactionId: req.params.reactionId } } },
         { runValidators: true, new: true }
       );
 

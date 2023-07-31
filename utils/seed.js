@@ -1,15 +1,15 @@
 const connection = require('../config/connection');
-const { Course, user } = require('../models');
-const { getRandomName, getRandomAssignments } = require('./data');
+const { Thought, User } = require('../models');
+const { getRandomName, getRandomreactions } = require('./data');
 
 connection.on('error', (err) => err);
 
 connection.once('open', async () => {
   console.log('connected');
     // Delete the collections if they exist
-    let courseCheck = await connection.db.listCollections({ name: 'courses' }).toArray();
-    if (courseCheck.length) {
-      await connection.dropCollection('courses');
+    let thoughtCheck = await connection.db.listCollections({ name: 'thoughts' }).toArray();
+    if (thoughtCheck.length) {
+      await connection.dropCollection('thoughts');
     }
 
     let usersCheck = await connection.db.listCollections({ name: 'users' }).toArray();
@@ -21,28 +21,28 @@ connection.once('open', async () => {
 
   // Loop 20 times -- add users to the users array
   for (let i = 0; i < 20; i++) {
-    // Get some random assignment objects using a helper function that we imported from ./data
-    const assignments = getRandomAssignments(20);
+    // Get some random reaction objects using a helper function that we imported from ./data
+    const reactions = getRandomreactions(20);
 
     const fullName = getRandomName();
     const first = fullName.split(' ')[0];
     const last = fullName.split(' ')[1];
-    const github = `${first}${Math.floor(Math.random() * (99 - 18 + 1) + 18)}`;
+    const email = `${first}${Math.floor(Math.random() * (99 - 18 + 1) + 18)}`;
 
     users.push({
       first,
       last,
-      github,
-      assignments,
+      email,
+      reactions,
     });
   }
 
   // Add users to the collection and await the results
-  await user.collection.insertMany(users);
+  await User.collection.insertMany(users);
 
-  // Add courses to the collection and await the results
-  await Course.collection.insertOne({
-    courseName: 'UCLA',
+  // Add thoughts to the collection and await the results
+  await Thought.collection.insertOne({
+    thoughtName: 'UCLA',
     inPerson: false,
     users: [...users],
   });

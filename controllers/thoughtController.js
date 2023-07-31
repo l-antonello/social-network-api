@@ -2,7 +2,7 @@ const { Thought, User } = require('../models');
 
 module.exports = {
   // Get all thoughts
-  async getthoughts(req, res) {
+  async getThoughts(req, res) {
     try {
       const thoughts = await Thought.find();
       res.json(thoughts);
@@ -11,7 +11,7 @@ module.exports = {
     }
   },
   // Get a thought
-  async getSinglethought(req, res) {
+  async getSingleThought(req, res) {
     try {
       const thought = await Thought.findOne({ _id: req.params.thoughtId })
         .select('-__v');
@@ -26,7 +26,7 @@ module.exports = {
     }
   },
   // Create a thought
-  async createthought(req, res) {
+  async createThought(req, res) {
     try {
       const thought = await Thought.create(req.body);
       res.json(thought);
